@@ -99,7 +99,7 @@ static int _sqlite_set_pragmas(apr_pool_t *pool, mapcache_cache_sqlite* cache, s
 static apr_status_t _sqlite_reslist_get_rw_connection(void **conn_, void *params, apr_pool_t *pool)
 {
   int ret;
-  int flags;  
+  int flags;
   mapcache_cache_sqlite *cache = (mapcache_cache_sqlite*) params;
   struct sqlite_conn *conn = apr_pcalloc(pool, sizeof (struct sqlite_conn));
   *conn_ = conn;
@@ -136,13 +136,13 @@ static apr_status_t _sqlite_reslist_get_rw_connection(void **conn_, void *params
 static apr_status_t _sqlite_reslist_get_ro_connection(void **conn_, void *params, apr_pool_t *pool)
 {
   int ret;
-  int flags;  
+  int flags;
   mapcache_cache_sqlite *cache = (mapcache_cache_sqlite*) params;
   struct sqlite_conn *conn = apr_pcalloc(pool, sizeof (struct sqlite_conn));
   *conn_ = conn;
   flags = SQLITE_OPEN_READONLY | SQLITE_OPEN_NOMUTEX;
   ret = sqlite3_open_v2(cache->dbfile, &conn->handle, flags, NULL);
-  
+
   if (ret != SQLITE_OK) {
     return APR_EGENERAL;
   }
@@ -364,7 +364,7 @@ static void _bind_mbtiles_params(mapcache_context *ctx, void *vstmt, mapcache_ti
   paramidx = sqlite3_bind_parameter_index(stmt, ":color");
   if (paramidx) {
     char *key;
-    assert(tile->raw_image);    
+    assert(tile->raw_image);
     key = apr_psprintf(ctx->pool,"#%02x%02x%02x%02x",
                              tile->raw_image->data[0],
                              tile->raw_image->data[1],
@@ -372,7 +372,7 @@ static void _bind_mbtiles_params(mapcache_context *ctx, void *vstmt, mapcache_ti
                              tile->raw_image->data[3]);
     sqlite3_bind_text(stmt, paramidx, key, -1, SQLITE_STATIC);
   }
-  
+
   /* tile blob data */
   paramidx = sqlite3_bind_parameter_index(stmt, ":data");
   if (paramidx) {
@@ -783,7 +783,7 @@ static void _mapcache_cache_sqlite_configuration_parse_xml(mapcache_context *ctx
   if ((cur_node = ezxml_child(node, "dbfile")) != NULL) {
     dcache->dbfile = apr_pstrdup(ctx->pool, cur_node->txt);
   }
-  
+
   dcache->detect_blank = 0;
   if ((cur_node = ezxml_child(node, "detect_blank")) != NULL) {
     if(!strcasecmp(cur_node->txt,"true")) {
@@ -904,6 +904,7 @@ mapcache_cache* mapcache_cache_mbtiles_create(mapcache_context *ctx)
   cache->create_stmt.sql = apr_pstrdup(ctx->pool,
                                        "create table if not exists images(tile_id text, tile_data blob, primary key(tile_id));"\
                                        "CREATE TABLE  IF NOT EXISTS map (zoom_level integer, tile_column integer, tile_row integer, tile_id text, foreign key(tile_id) references images(tile_id), primary key(tile_row,tile_column,zoom_level));"\
+                                       "create index if not exists map_index on map(zoom_level, tile_column, tile_row);"\
                                        "create table if not exists metadata(name text, value text);"\
                                        "create view if not exists tiles AS SELECT map.zoom_level AS zoom_level, map.tile_column AS tile_column, map.tile_row AS tile_row, images.tile_data AS tile_data FROM map JOIN images ON images.tile_id = map.tile_id;"
                                       );
